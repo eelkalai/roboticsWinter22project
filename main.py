@@ -11,7 +11,7 @@ if __name__ == "__main__":
     print(client.isConnected())
 
     time.sleep(4)
-    client.setAtPosition(-346, -700, -200)
+    client.setAtPosition(-346, -700, -100)
 
     # time.sleep(3)
     # client.flyToPosition(-346, -420, -100, 10)
@@ -29,10 +29,16 @@ if __name__ == "__main__":
             print("0-quit")
             print("1-Help")
             print("2-MoveInLine")
+            print("3-SetPosition")
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
             PathFinder.MoveInLine(client, x, y)
+        elif action == 3:
+            x = int(input("x:"))
+            y = int(input("y:"))
+            z = int(input("z:"))
+            client.setAtPosition(x, y, z)
         else:
             print("position: ", client.getPosNumpy())
         print(client.getLidarData())
