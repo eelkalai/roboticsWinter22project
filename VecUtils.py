@@ -14,3 +14,6 @@ def AxesToVec(x, y, z):
 
 def VecToAxes(vec):
     return vec[0], vec[1], vec[2]
+
+def Distance2D(start, end):
+    return np.linalg.norm(start[:2] - end[:2])
