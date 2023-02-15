@@ -4,6 +4,32 @@ import time
 import VecUtils
 
 
+class ActionPerStep:
+    MOVE = 1
+    END = 2
+
+
+def DecideOnAction():
+    return ActionPerStep.MOVE
+
+
+def MoveToPoint(drone, x, y):
+    cur_pos = drone.getPosNumpy()
+    end_pos = cur_pos + np.array((x, y, 0))
+    step_destination = end_pos
+    distance = VecUtils.Distance2D(cur_pos, end_pos)
+    speed = 0
+    stop_distance = 0
+    print("speed=", speed, ", delta=", distance, ", stopDistance=", stop_distance)
+    while True:
+        action = DecideOnAction()
+        if action == ActionPerStep.MOVE:
+            drone.MoveStep(end_pos, speed)
+            time.sleep(drone.getStepSize())
+        elif action == ActionPerStep.END:
+            return
+
+
 def MoveInLine(drone, x, y):
     cur_pos = drone.getPosNumpy()
     end_pos = cur_pos + np.array((x, y, 0))
@@ -12,25 +38,25 @@ def MoveInLine(drone, x, y):
     stop_distance = 0
     print("speed=", speed,
           ", delta=", distance, ", stopDistance=", stop_distance)
-    while distance > drone.ACCELERATION * drone.STEP_SIZE:
+    while distance > drone.getAccelerationRate() * drone.getStepSize():
         cur_pos = drone.getPosNumpy()
         distance = VecUtils.Distance2D(cur_pos, end_pos)
         stop_distance = StopDistance(drone, speed)
-        if min(drone.LIDAR_RANGE, distance) > stop_distance and speed < drone.MAX_SPEED:
-            speed = speed + drone.ACCELERATION
+        if min(drone.getLidarRange(), distance) > stop_distance and speed < drone.getMaxSpeed():
+            speed = speed + drone.getAccelerationRate()
         stop_distance = StopDistance(drone, speed)
-        if min(drone.LIDAR_RANGE, distance) <= stop_distance:
-            speed = speed - drone.ACCELERATION
+        if min(drone.getLidarRange(), distance) <= stop_distance:
+            speed = speed - drone.getAccelerationRate()
         stop_distance = StopDistance(drone, speed)
         print("speed=", speed,
               ", delta=", distance, ", stopDistance=", stop_distance)
-        drone.MoveSlightly(end_pos, speed)
+        drone.MoveStep(end_pos, speed)
 
 
 def StopDistance(drone, speed):
-    if speed == drone.ACCELERATION:
-        return drone.ACCELERATION * drone.STEP_SIZE
-    return (speed ** 2) / (2 * drone.ACCELERATION)
+    if speed == drone.getAccelerationRate():
+        return drone.getAccelerationRate() * drone.getStepSize()
+    return (speed ** 2) / (2 * drone.getAccelerationRate())
 
 
 def SolvePolyPath(x_0, x_1, v_0, v_1, t_0, t_1):

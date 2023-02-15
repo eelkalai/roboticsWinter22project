@@ -12,7 +12,8 @@ if __name__ == "__main__":
 
     time.sleep(4)
     client.setAtPosition(-346, -700, -100)
-
+    client.getLidarData()
+    client.getLidarWorldNumpy()
     # time.sleep(3)
     # client.flyToPosition(-346, -420, -100, 10)
     # client.MoveInLine(50, 50)
@@ -30,6 +31,8 @@ if __name__ == "__main__":
             print("1-Help")
             print("2-MoveInLine")
             print("3-SetPosition")
+            print("4-GetLidar")
+            print("5-GetPosition")
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
@@ -39,9 +42,14 @@ if __name__ == "__main__":
             y = int(input("y:"))
             z = int(input("z:"))
             client.setAtPosition(x, y, z)
-        else:
+        elif action == 4:
+            print("lidar_world: ",client.getLidarWorldNumpy())
+            print("lidar_reletive: ",client.getLidarRelativeNumpy())
+            print("lider: ",client.getLidarData().points)
+        elif action == 5:
             print("position: ", client.getPosNumpy())
         print(client.getLidarData())
         time.sleep(1)
+
 
         
