@@ -4,7 +4,7 @@ import time
 import VecUtils
 
 
-class ActionPerStep():
+class ActionPerStep:
     MOVE = 1
     END = 2
 
@@ -50,7 +50,7 @@ def MoveInLine(drone, x, y):
         stop_distance = StopDistance(drone, speed)
         print("speed=", speed,
               ", delta=", distance, ", stopDistance=", stop_distance)
-        drone.MoveSlightly(end_pos, speed)
+        drone.MoveStep(end_pos, speed)
 
 
 def StopDistance(drone, speed):
