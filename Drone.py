@@ -24,6 +24,10 @@ class Drone(DroneClient):
         cur_pos = self.getPose().pos
         return VecUtils.AxesToVec(cur_pos.x_m, cur_pos.y_m, cur_pos.z_m)
 
+    def getRotNumpy(self):
+        cur_rot = self.getPose().orientation
+        return VecUtils.AxesToVec(cur_rot.x_rad, cur_rot.y_rad, cur_rot.z_rad)
+
     def getLidarRelativeNumpy(self):
         theta = -self.getPose().orientation.z_rad
         r_z = MatrixUtils.RotationMatrix(theta, 2)
