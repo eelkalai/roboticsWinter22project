@@ -33,6 +33,8 @@ if __name__ == "__main__":
             print("3-SetPosition")
             print("4-GetLidar")
             print("5-GetPosition")
+            print("6-GetRotation")
+            print("7-save lidar data x10")
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
@@ -48,6 +50,16 @@ if __name__ == "__main__":
             print("lider: ",client.getLidarData().points)
         elif action == 5:
             print("position: ", client.getPosNumpy())
+        elif action == 6:
+            print('Rotation: ', client.getRotNumpy())
+        elif action == 7:
+            for x in range(10):
+                print(x)
+                print("position: ", client.getPosNumpy())
+                print('Rotation: ', client.getRotNumpy())
+                print("lidar_world: ", client.getLidarWorldNumpy())
+                print("lidar_reletive: ", client.getLidarRelativeNumpy())
+                print("lider: ", client.getLidarData().points)
         print(client.getLidarData())
         time.sleep(1)
 
