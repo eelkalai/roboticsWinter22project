@@ -35,7 +35,6 @@ def plot_all_polygon():
         x, y = poly.exterior.xy
         plt.plot(x, y)
         # show the plot
-    plt.gca().invert_xaxis()
     plt.grid()
     plt.show()
 
@@ -53,5 +52,8 @@ def plot_polygon(polygon_number):
 
 def plot_lidar_data(polygon_number, x_obstacle, y_obstacle):
     plot_polygon(polygon_number)
-    plt.scatter(x_obstacle, y_obstacle, s=1, c='blue')
+    plt.scatter(x_obstacle, y_obstacle, s=2, c='red')
     plt.show()
+
+# check:
+plot_all_polygon()

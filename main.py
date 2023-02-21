@@ -3,7 +3,7 @@ from Drone import Drone
 from DroneClient import DroneClient
 import time
 import airsim.utils
-import Visibility_Graph as VG
+import Visibility_Graph as vg
 
 if __name__ == "__main__":
     client = Drone()
@@ -36,7 +36,7 @@ if __name__ == "__main__":
             print("4-GetLidar")
             print("5-GetPosition")
             print("6-GetRotation")
-            print("7-save lidar data x10")
+            print("7-plot lidar data x10")
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
@@ -55,14 +55,12 @@ if __name__ == "__main__":
         elif action == 6:
             print('Rotation: ', client.getRotNumpy())
         elif action == 7:
+            obs = int(input("obstacle:"))
+            lidar_point = client.performScan(0.6, 6)
             print("position: ", client.getPosNumpy())
             print('Rotation: ', client.getRotNumpy())
-            for x in range(10):
-                print(x)
-                print("lidar_world: ", client.getLidarWorldNumpy())
-                print("lidar_reletive: ", client.getLidarRelativeNumpy())
-                print("lider: ", client.getLidarData().points)
-                time.sleep(0.6)
+            print("lidar point in world frame:", lidar_point)
+            vg.plot_lidar_data(obs, lidar_point[:, 0], lidar_point[:, 1])
         print(client.getLidarData())
         time.sleep(1)
 
