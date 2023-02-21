@@ -32,13 +32,18 @@ class Drone(DroneClient):
         theta = -self.getPose().orientation.z_rad
         r_z = MatrixUtils.RotationMatrix(theta, 2)
         lidar_data = self.getLidarData().points
+        if len(lidar_data) > 3:
+            lidar_data = lidar_data[:3]
         if len(lidar_data) == 3:
             lidar_data = np.array(lidar_data)
             lidar_data = r_z.dot(lidar_data)
         return lidar_data
 
     def getLidarWorldNumpy(self):
-        return self.getLidarRelativeNumpy() + self.getPosNumpy()
+        lidar = self.getLidarRelativeNumpy();
+        if len(lidar) == 0:
+            return lidar
+        return lidar + self.getPosNumpy()
 
     def getStepSize(self):
         return self.__STEP_SIZE
@@ -54,3 +59,12 @@ class Drone(DroneClient):
 
     def getLidarRange(self):
         return self.__LIDAR_RANGE
+
+    def performScan(self, interval=0.1, duration=1):
+        lidar_points = np.empty((0, 3), float)
+        for i in range(round(duration / interval)):
+            cur_point = self.getLidarWorldNumpy()
+            if cur_point[0] != 0:
+                lidar_points = np.append(lidar_points, np.array([cur_point]), axis=0)
+            time.sleep(interval)
+        return lidar_points
