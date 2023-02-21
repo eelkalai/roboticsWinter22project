@@ -20,6 +20,9 @@ class Drone(DroneClient):
         x, y, z = VecUtils.VecToAxes(end_pos)
         self.flyToPosition(x, y, z, speed)
 
+    def FollowObstacle(self):
+        pass
+
     def getPosNumpy(self):
         cur_pos = self.getPose().pos
         return VecUtils.AxesToVec(cur_pos.x_m, cur_pos.y_m, cur_pos.z_m)
@@ -40,7 +43,7 @@ class Drone(DroneClient):
         return lidar_data
 
     def getLidarWorldNumpy(self):
-        lidar = self.getLidarRelativeNumpy();
+        lidar = self.getLidarRelativeNumpy()
         if len(lidar) == 0:
             return lidar
         return lidar + self.getPosNumpy()
