@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     time.sleep(4)
     # client.setAtPosition(-346, -700, -100) #start position
-    client.setAtPosition(-246, -600, -100)  # start before obstacle
+    client.setAtPosition(-235, -600, -100)  # start before obstacle
     client.getLidarData()
     client.getLidarWorldNumpy()
     # time.sleep(3)
@@ -56,13 +56,11 @@ if __name__ == "__main__":
             print('Rotation: ', client.getRotNumpy())
         elif action == 7:
             obs = int(input("obstacle:"))
-            lidar_point = client.performScan(0.6, 6)
+            interval = float(input("time interval: "))
+            duration = float(input("time duration: "))
+            lidar_point = client.performScan(interval, duration)
             print("position: ", client.getPosNumpy())
             print('Rotation: ', client.getRotNumpy())
             print("lidar point in world frame:", lidar_point)
             vg.plot_lidar_data(obs, lidar_point[:, 0], lidar_point[:, 1])
-        print(client.getLidarData())
         time.sleep(1)
-
-
-        
