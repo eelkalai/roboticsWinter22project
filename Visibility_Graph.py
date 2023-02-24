@@ -54,6 +54,3 @@ def plot_lidar_data(polygon_number, x_obstacle, y_obstacle):
     plot_polygon(polygon_number)
     plt.scatter(x_obstacle, y_obstacle, s=2, c='red')
     plt.show()
-
-# check:
-plot_all_polygon()

@@ -44,7 +44,7 @@ class Drone(DroneClient):
 
     def getLidarWorldNumpy(self):
         lidar = self.getLidarRelativeNumpy()
-        if len(lidar) == 0:
+        if lidar[0] == 0:
             return lidar
         return lidar + self.getPosNumpy()
 
