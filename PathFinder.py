@@ -7,25 +7,52 @@ import VecUtils
 class ActionPerStep:
     MOVE = 1
     END = 2
+    SCAN = 3
+    OBSTACLE = 4
 
 
-def DecideOnAction():
-    return ActionPerStep.MOVE
+def DecideOnAction(next_point, speed, cur_pos, drone):
+    distance = VecUtils.Distance2D(cur_pos, next_point)
+    scan = drone.performScanRelative()
+    if scan.size > 0:
+        ind = np.argsort(np.absolute(scan[:, 1]))
+        scan = scan[ind]
+        if scan[0,1] < 1:
+            return ActionPerStep.OBSTACLE
+    if distance > drone.getStepSize():
+        return ActionPerStep.MOVE
+    return ActionPerStep.END
 
 
-def MoveToPoint(drone, x, y):
+def FindTangent(drone):
+    scan = drone.performScanRelative()
+    ind = np.argsort(scan[:, 1])
+    scan = (scan[ind])[(0, -1), :]
+    scan[0][0] = scan[0][0] + drone.getSize()
+    scan[0][1] = scan[0][1] - drone.getSize()
+    scan[1][0] = scan[0][0] + drone.getSize()
+    scan[1][1] = scan[1][1] + drone.getSize()
+    scan = drone.getLidarWorldNumpy(scan)
+    return scan
+
+def BypassObstacle(drone, cur_pos, end_pos):
+    tangent = FindTangent(drone)
+    pass
+
+
+def Bug2(drone, x, y):
     cur_pos = drone.getPosNumpy()
     end_pos = cur_pos + np.array((x, y, 0))
-    step_destination = end_pos
-    distance = VecUtils.Distance2D(cur_pos, end_pos)
+    next_point = end_pos
+    polygons = {}
     speed = 0
-    stop_distance = 0
-    print("speed=", speed, ", delta=", distance, ", stopDistance=", stop_distance)
     while True:
-        action = DecideOnAction()
-        if action == ActionPerStep.MOVE:
+        cur_pos = drone.getPosNumpy()
+        action = DecideOnAction(next_point, speed, cur_pos)
+        if action == ActionPerStep.OBSTACLE:
+            BypassObstacle(drone, cur_pos, end_pos)
+        elif action == ActionPerStep.MOVE:
             drone.MoveStep(end_pos, speed)
-            time.sleep(drone.getStepSize())
         elif action == ActionPerStep.END:
             return
 
@@ -38,7 +65,7 @@ def MoveInLine(drone, x, y):
     stop_distance = 0
     print("speed=", speed,
           ", delta=", distance, ", stopDistance=", stop_distance)
-    while distance > drone.getAccelerationRate() * drone.getStepSize():
+    while distance > 2:
         cur_pos = drone.getPosNumpy()
         distance = VecUtils.Distance2D(cur_pos, end_pos)
         stop_distance = StopDistance(drone, speed)
@@ -49,7 +76,7 @@ def MoveInLine(drone, x, y):
             speed = speed - drone.getAccelerationRate()
         stop_distance = StopDistance(drone, speed)
         print("speed=", speed,
-              ", delta=", distance, ", stopDistance=", stop_distance)
+              ", delta=", distance, ", cur_pos=",cur_pos,", end pos=",end_pos)
         drone.MoveStep(end_pos, speed)
 
 
@@ -66,3 +93,4 @@ def SolvePolyPath(x_0, x_1, v_0, v_1, t_0, t_1):
                   [0, 1, 2 * t_1, 3 * t_1 ** 2]])
     B = np.array([x_0, x_1, v_0, v_1])
     print(np.linalg.solve(A, B))
+
