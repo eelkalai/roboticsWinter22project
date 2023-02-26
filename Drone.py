@@ -17,6 +17,9 @@ class Drone(DroneClient):
         self.__LIDAR_RANGE = 35
 
     def MoveStep(self, end_pos, speed):
+        norm = np.linalg.norm(self.getPosNumpy() - end_pos)
+        if norm > self.getLidarRange():
+            end_pos = end_pos / norm * self.getLidarRange()
         x, y, z = VecUtils.VecToAxes(end_pos)
         self.flyToPosition(x, y, z, speed)
 
@@ -32,21 +35,23 @@ class Drone(DroneClient):
         return VecUtils.AxesToVec(cur_rot.x_rad, cur_rot.y_rad, cur_rot.z_rad)
 
     def getLidarRelativeNumpy(self):
-        theta = -self.getPose().orientation.z_rad
-        r_z = MatrixUtils.RotationMatrix(theta, 2)
         lidar_data = self.getLidarData().points
         if len(lidar_data) > 3:
             lidar_data = lidar_data[:3]
         if len(lidar_data) == 3:
             lidar_data = np.array(lidar_data)
-            lidar_data = r_z.dot(lidar_data)
         return lidar_data
 
-    def getLidarWorldNumpy(self):
-        lidar = self.getLidarRelativeNumpy()
-        if lidar[0] == 0:
-            return lidar
-        return lidar + self.getPosNumpy()
+    def getLidarWorldNumpy(self, lidar_data=np.empty((0, 3), float)):
+        theta = -self.getPose().orientation.z_rad
+        r_z = MatrixUtils.RotationMatrix(theta, 2)
+        if lidar_data.size == 0:
+            lidar_data = self.getLidarRelativeNumpy()
+            if lidar_data[0] == 0:
+                return lidar_data
+        lidar_data = r_z @ np.transpose(lidar_data)
+        lidar_data = np.transpose(lidar_data)
+        return lidar_data + self.getPosNumpy()
 
     def getStepSize(self):
         return self.__STEP_SIZE
@@ -63,7 +68,7 @@ class Drone(DroneClient):
     def getLidarRange(self):
         return self.__LIDAR_RANGE
 
-    def performScan(self, interval=0.1, duration=1):
+    def performScanWorld(self, interval=0.1, duration=2):
         lidar_points = np.empty((0, 3), float)
         for i in range(round(duration / interval)):
             cur_point = self.getLidarWorldNumpy()
@@ -71,3 +76,15 @@ class Drone(DroneClient):
                 lidar_points = np.append(lidar_points, np.array([cur_point]), axis=0)
             time.sleep(interval)
         return lidar_points
+
+    def performScanRelative(self, interval=0.1, duration=2):
+        lidar_points = np.empty((0, 3), float)
+        for i in range(round(duration / interval)):
+            cur_point = self.getLidarRelativeNumpy()
+            if cur_point[0] != 0:
+                lidar_points = np.append(lidar_points, np.array([cur_point]), axis=0)
+            time.sleep(interval)
+        return lidar_points
+
+    def getSize(self):
+        return 1

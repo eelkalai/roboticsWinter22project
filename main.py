@@ -8,9 +8,7 @@ import Visibility_Graph as vg
 if __name__ == "__main__":
     client = Drone()
     client.connect()
-
     print(client.isConnected())
-
     time.sleep(4)
     # client.setAtPosition(-346, -700, -100) #start position
     client.setAtPosition(-235, -600, -100)  # start before obstacle
@@ -58,7 +56,7 @@ if __name__ == "__main__":
             obs = int(input("obstacle:"))
             interval = float(input("time interval: "))
             duration = float(input("time duration: "))
-            lidar_point = client.performScan(interval, duration)
+            lidar_point = client.performScanWorld(interval, duration)
             print("position: ", client.getPosNumpy())
             print('Rotation: ', client.getRotNumpy())
             print("lidar point in world frame:", lidar_point)
