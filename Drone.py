@@ -17,7 +17,7 @@ class Drone(DroneClient):
         self.__LIDAR_RANGE = 35
 
     def MoveStep(self, end_pos, speed):
-        norm = np.linalg.norm(self.getPosNumpy() - end_pos)
+        norm = VecUtils.Distance2D(self.getPosNumpy(), end_pos)
         if norm > self.getLidarRange():
             end_pos = end_pos / norm * self.getLidarRange()
         x, y, z = VecUtils.VecToAxes(end_pos)
@@ -43,7 +43,7 @@ class Drone(DroneClient):
         return lidar_data
 
     def getLidarWorldNumpy(self, lidar_data=np.empty((0, 3), float)):
-        theta = -self.getPose().orientation.z_rad
+        theta = self.getPose().orientation.z_rad
         r_z = MatrixUtils.RotationMatrix(theta, 2)
         if lidar_data.size == 0:
             lidar_data = self.getLidarRelativeNumpy()
