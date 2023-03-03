@@ -12,6 +12,7 @@ if __name__ == "__main__":
     time.sleep(4)
     # client.setAtPosition(-346, -700, -100) #start position
     client.setAtPosition(-235, -600, -100)  # start before obstacle
+
     client.getLidarData()
     client.getLidarWorldNumpy()
     # time.sleep(3)
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
-            PathFinder.MoveInLine(client, x, y)
+            PathFinder.Bug2(client, x, y)
         elif action == 3:
             x = int(input("x:"))
             y = int(input("y:"))
@@ -49,7 +50,7 @@ if __name__ == "__main__":
             print("lidar_reletive: ",client.getLidarRelativeNumpy())
             print("lider: ",client.getLidarData().points)
         elif action == 5:
-            print("position: ", client.getPosNumpy())
+                print("position: ", client.getPosNumpy())
         elif action == 6:
             print('Rotation: ', client.getRotNumpy())
         elif action == 7:
