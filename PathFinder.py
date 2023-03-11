@@ -3,6 +3,7 @@ import time
 
 import VecUtils
 from shapely.geometry import Polygon, Point
+from math import sqrt
 
 
 class ActionPerStep:
@@ -117,3 +118,45 @@ def SolvePolyPath(x_0, x_1, v_0, v_1, t_0, t_1):
                   [0, 1, 2 * t_1, 3 * t_1 ** 2]])
     B = np.array([x_0, x_1, v_0, v_1])
     print(np.linalg.solve(A, B))
+
+
+def distanceFromObs(drone, max_duration):
+    o1 = drone.getLidarRelativeNumpy()
+    if o1.size == 0:
+        return None
+    elif abs(o1[1]) < 1:
+        return o1[0]
+    else:
+        duration = 0
+        while duration < max_duration:
+            time.sleep(0.1)
+            o2 = drone.getLidarRelativeNumpy()
+            if o2.size > 1:
+                return distanceFromOrigin2Line(o1, o2)
+            duration += 0.1
+        return np.linalg.norm(o1[:2])
+
+
+def distanceFromOrigin2Line(o1, o2):
+    # y = mx + b
+    m = (o2[1]-o1[1]) / (o2[0]-o1[0])
+    b = o1[1] - m*o1[0]
+    return abs(b) / sqrt(m**2 + 1)
+
+
+def FolloWall(drone):
+    speed = 1
+    save_distance = 5
+    interval = 0.1
+    count = 0
+    drone.goInLine(0, speed)
+    while count < speed / (save_distance * interval):
+        distance = distanceFromObs(drone, interval)
+        print("distance", distance)
+        if distance is not None:
+            alpha = (distance - save_distance) / (save_distance + distance) * 2
+            drone.goInLine(alpha, speed)
+            count = -interval
+        time.sleep(interval)
+        count += interval
+    drone.stop()
