@@ -7,6 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from shapely.geometry import Polygon
 from shapely.geometry import Point
+from math import sin, cos
 
 
 def oped_obstacle_csv():
@@ -50,7 +51,15 @@ def plot_polygon(polygon_number):
     plt.plot(x, y)
 
 
-def plot_lidar_data(polygon_number, x_obstacle, y_obstacle):
+def plot_drone(pos, rot):
+    x = pos[0]
+    y = pos[1]
+    plt.scatter(x, y, s=4, c='blue')
+    plt.plot([x, x+4*cos(rot)], [y, y+4*sin(rot)])
+
+
+def plot_lidar_data(polygon_number, x_obstacle, y_obstacle, pos, rot):
     plot_polygon(polygon_number)
+    plot_drone(pos, rot)
     plt.scatter(x_obstacle, y_obstacle, s=2, c='red')
     plt.show()

@@ -1,3 +1,5 @@
+import numpy as np
+
 import PathFinder
 from Drone import Drone
 from DroneClient import DroneClient
@@ -36,6 +38,8 @@ if __name__ == "__main__":
             print("5-GetPosition")
             print("6-GetRotation")
             print("7-plot lidar data x10")
+            print("8-Follow Obstacle")
+            print("9-Manual Movement")
         elif action == 2:
             x = int(input("x:"))
             y = int(input("y:"))
@@ -61,5 +65,18 @@ if __name__ == "__main__":
             print("position: ", client.getPosNumpy())
             print('Rotation: ', client.getRotNumpy())
             print("lidar point in world frame:", lidar_point)
-            vg.plot_lidar_data(obs, lidar_point[:, 0], lidar_point[:, 1])
+            vg.plot_lidar_data(obs, lidar_point[:, 0], lidar_point[:, 1], client.getPosNumpy(), client.getPose().orientation.z_rad)
+        elif action == 8:
+            PathFinder.FolloWall(client)
+            # interval = float(input("time interval: "))
+            # dis = PathFinder.distanceFromObs(client, interval)
+            # while dis is None:
+            #     dis = PathFinder.distanceFromObs(client, interval)
+            # print(dis)
+        elif action == 9:
+            x = float(input("x:"))
+            y = float(input("y:"))
+            speed = float(input("speed:"))
+            cur_pos = client.getPosNumpy()
+            client.flyToPosition(x+cur_pos[0], y+cur_pos[1], cur_pos[2], speed)
         time.sleep(1)

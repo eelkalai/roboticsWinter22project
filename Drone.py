@@ -4,6 +4,7 @@ import MatrixUtils
 import VecUtils
 from DroneClient import DroneClient
 import time
+from math import cos, sin, inf
 
 
 class Drone(DroneClient):
@@ -23,9 +24,6 @@ class Drone(DroneClient):
         x, y, z = VecUtils.VecToAxes(end_pos)
         self.flyToPosition(x, y, z, speed)
 
-    def FollowObstacle(self):
-        pass
-
     def getPosNumpy(self):
         cur_pos = self.getPose().pos
         return VecUtils.AxesToVec(cur_pos.x_m, cur_pos.y_m, cur_pos.z_m)
@@ -40,10 +38,11 @@ class Drone(DroneClient):
             lidar_data = lidar_data[:3]
         if len(lidar_data) == 3:
             lidar_data = np.array(lidar_data)
+        else: lidar_data = np.array([])
         return lidar_data
 
     def getLidarWorldNumpy(self, lidar_data=np.empty((0, 3), float)):
-        theta = self.getPose().orientation.z_rad
+        theta = -self.getPose().orientation.z_rad
         r_z = MatrixUtils.RotationMatrix(theta, 2)
         if lidar_data.size == 0:
             lidar_data = self.getLidarRelativeNumpy()
@@ -88,3 +87,16 @@ class Drone(DroneClient):
 
     def getSize(self):
         return 1
+
+    def goInLine(self, alpha, speed):
+        self.MoveStep(self.drone2world(np.array([10*cos(alpha), 10*sin(alpha), 0])), speed)
+
+    def stop(self):
+        self.MoveStep(self.drone2world(np.array([0, 0, 0])), 0)
+
+    def drone2world(self, drone_vector):
+        theta = -self.getPose().orientation.z_rad
+        r_z = MatrixUtils.RotationMatrix(theta, 2)
+        drone_vector = r_z @ np.transpose(drone_vector)
+        drone_vector = np.transpose(drone_vector)
+        return drone_vector + self.getPosNumpy()
