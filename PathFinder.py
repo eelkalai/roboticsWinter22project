@@ -3,7 +3,7 @@ import time
 
 import VecUtils
 from shapely.geometry import Polygon, Point
-from math import sqrt
+from math import sqrt, atan, pi
 
 
 class ActionPerStep:
@@ -120,21 +120,21 @@ def SolvePolyPath(x_0, x_1, v_0, v_1, t_0, t_1):
     print(np.linalg.solve(A, B))
 
 
-def distanceFromObs(drone, max_duration):
+def distance_and_angleFromObs(drone, max_duration):
     o1 = drone.getLidarRelativeNumpy()
     if o1.size == 0:
-        return None
+        return None, None
     elif abs(o1[1]) < 1:
-        return o1[0]
+        return o1[0], 0
     else:
         duration = 0
         while duration < max_duration:
             time.sleep(0.1)
             o2 = drone.getLidarRelativeNumpy()
             if o2.size > 1:
-                return distanceFromOrigin2Line(o1, o2)
+                return distanceFromOrigin2Line(o1, o2), wallAngle(o1,o2)
             duration += 0.1
-        return np.linalg.norm(o1[:2])
+        return np.linalg.norm(o1[:2]), None
 
 
 def distanceFromOrigin2Line(o1, o2):
@@ -144,18 +144,30 @@ def distanceFromOrigin2Line(o1, o2):
     return abs(b) / sqrt(m**2 + 1)
 
 
+def wallAngle(o1, o2):
+    # alpha = atan((o2[1]-o1[1]) / (o2[0]-o1[0]))
+    # if alpha > pi/18:
+    #     alpha = alpha - pi
+    # return alpha
+    return atan((o2[1]-o1[1]) / (o2[0]-o1[0]))
+
 def FolloWall(drone):
     speed = 1
     save_distance = 5
     interval = 0.1
     count = 0
     drone.goInLine(0, speed)
+    ref_angle = 0
     while count < speed / (save_distance * interval):
-        distance = distanceFromObs(drone, interval)
-        print("distance", distance)
+        distance, angle = distance_and_angleFromObs(drone, interval)
+        print("distance: ", distance)
         if distance is not None:
-            alpha = (distance - save_distance) / (save_distance + distance) * 2
-            drone.goInLine(alpha, speed)
+            if angle is not None:
+                ref_angle = angle
+                print("ref_angle: ", ref_angle)
+            alpha = (distance - save_distance) / (save_distance + distance)
+            print("alpha: ", alpha)
+            drone.goInLine(ref_angle + alpha, speed)
             count = -interval
         time.sleep(interval)
         count += interval

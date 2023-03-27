@@ -46,7 +46,7 @@ class Drone(DroneClient):
         r_z = MatrixUtils.RotationMatrix(theta, 2)
         if lidar_data.size == 0:
             lidar_data = self.getLidarRelativeNumpy()
-            if lidar_data[0] == 0:
+            if lidar_data.size == 0:
                 return lidar_data
         lidar_data = r_z @ np.transpose(lidar_data)
         lidar_data = np.transpose(lidar_data)
