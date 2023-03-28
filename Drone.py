@@ -11,16 +11,13 @@ class Drone(DroneClient):
 
     def __init__(self):
         super().__init__()
-        self.__STEP_SIZE = 1
+        self.__STEP_SIZE = 5
         self.__MAX_SPEED = 25
         self.__ACCELERATION = 0.5
         self.__LIDAR_FOV = 90
         self.__LIDAR_RANGE = 35
 
     def MoveStep(self, end_pos, speed):
-        norm = VecUtils.Distance2D(self.getPosNumpy(), end_pos)
-        if norm > self.getLidarRange():
-            end_pos = end_pos / norm * self.getLidarRange()
         x, y, z = VecUtils.VecToAxes(end_pos)
         self.flyToPosition(x, y, z, speed)
 
@@ -46,7 +43,7 @@ class Drone(DroneClient):
         r_z = MatrixUtils.RotationMatrix(theta, 2)
         if lidar_data.size == 0:
             lidar_data = self.getLidarRelativeNumpy()
-            if lidar_data.size == 0:
+            if lidar_data.size == 0 or lidar_data[0] == 0:
                 return lidar_data
         lidar_data = r_z @ np.transpose(lidar_data)
         lidar_data = np.transpose(lidar_data)
@@ -80,13 +77,13 @@ class Drone(DroneClient):
         lidar_points = np.empty((0, 3), float)
         for i in range(round(duration / interval)):
             cur_point = self.getLidarRelativeNumpy()
-            if cur_point[0] != 0:
+            if cur_point.size != 0 and cur_point[0] != 0:
                 lidar_points = np.append(lidar_points, np.array([cur_point]), axis=0)
             time.sleep(interval)
         return lidar_points
 
     def getSize(self):
-        return 1
+        return 2
 
     def goInLine(self, alpha, speed):
         self.MoveStep(self.drone2world(np.array([10*cos(alpha), 10*sin(alpha), 0])), speed)

@@ -31,13 +31,14 @@ def FindTangent(drone):
     if scan.size == 0:
         return scan
     ind = np.argsort(scan[:, 1])
-    scan = (scan[ind])[(0, -1), :]
-    scan[0][0] = scan[0][0] + drone.getSize()
-    scan[0][1] = scan[0][1] - drone.getSize()
-    scan[1][0] = scan[0][0] + drone.getSize()
-    scan[1][1] = scan[1][1] + drone.getSize()
+    scan = (scan[ind])
+    if scan.size < 2:
+        return np.empty((0, 3), float)
+    scan = scan[(0, -1), :]
     scan = drone.getLidarWorldNumpy(scan)
-    return scan
+    scan[0] = scan[1] - scan[0] + drone.getPosNumpy()
+    scan[1] = scan[0]
+    return scan[0]
 
 
 def BypassObstacle(drone, start_pos, end_pos):
@@ -45,8 +46,10 @@ def BypassObstacle(drone, start_pos, end_pos):
     poly = Polygon()
     while not finished:
         next_pos, finished = ObstacleNextPos(drone, start_pos, end_pos)
-        print(drone.getPosNumpy(),next_pos)
+        print(drone.getPosNumpy(), next_pos)
+        og_pos = drone.getPosNumpy()
         drone.MoveStep(next_pos, 2)
+        time.sleep(2)
         if not finished:
             poly.union(Point(next_pos[0], next_pos[1]))
     return poly
@@ -56,27 +59,30 @@ def ObstacleNextPos(drone, start_pos, end_pos):
     tangent = FindTangent(drone)
     cur_pos = drone.getPosNumpy()
     if tangent.size == 0:
-        return cur_pos, True
-    intersection = VecUtils.Intersection(start_pos, end_pos, cur_pos, tangent[0])
+        return end_pos, True
+    intersection = np.array([])  # .Intersection(start_pos, end_pos, cur_pos, tangent[0])
     if intersection.size != 0:
         return intersection, True
-    return tangent[0], False
+    tangent[-1] = start_pos[-1]
+    return tangent, False
 
 
-def Bug2(drone, x, y):
+def Bug2(drone, x, y, relative=False):
     cur_pos = drone.getPosNumpy()
-    end_pos = cur_pos + np.array((x, y, 0))
+    end_pos = np.array([x,y,0],dtype= cur_pos.dtype)
+    if relative:
+        end_pos = end_pos + cur_pos
+    end_pos[-1] = cur_pos[-1]
     next_point = end_pos
     polygons = []
     speed = 0
     drone.MoveStep(end_pos, 2)
     while True:
         cur_pos = drone.getPosNumpy()
-        action = DecideOnAction(next_point, speed, cur_pos,drone)
+        action = DecideOnAction(end_pos, speed, cur_pos, drone)
         if action == ActionPerStep.OBSTACLE:
             polygons.append(BypassObstacle(drone, cur_pos, end_pos))
         elif action == ActionPerStep.MOVE:
-            print(drone.getPosNumpy(), end_pos)
             drone.MoveStep(end_pos, 2)
         elif action == ActionPerStep.END:
             return
@@ -132,16 +138,16 @@ def distance_and_angleFromObs(drone, max_duration):
             time.sleep(0.1)
             o2 = drone.getLidarRelativeNumpy()
             if o2.size > 1:
-                return distanceFromOrigin2Line(o1, o2), wallAngle(o1,o2)
+                return distanceFromOrigin2Line(o1, o2), wallAngle(o1, o2)
             duration += 0.1
         return np.linalg.norm(o1[:2]), None
 
 
 def distanceFromOrigin2Line(o1, o2):
     # y = mx + b
-    m = (o2[1]-o1[1]) / (o2[0]-o1[0])
-    b = o1[1] - m*o1[0]
-    return abs(b) / sqrt(m**2 + 1)
+    m = (o2[1] - o1[1]) / (o2[0] - o1[0])
+    b = o1[1] - m * o1[0]
+    return abs(b) / sqrt(m ** 2 + 1)
 
 
 def wallAngle(o1, o2):
@@ -149,7 +155,8 @@ def wallAngle(o1, o2):
     # if alpha > pi/18:
     #     alpha = alpha - pi
     # return alpha
-    return atan((o2[1]-o1[1]) / (o2[0]-o1[0]))
+    return atan((o2[1] - o1[1]) / (o2[0] - o1[0]))
+
 
 def FolloWall(drone):
     speed = 1
